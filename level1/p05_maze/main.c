@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 static int maze_size = 9;
 
@@ -114,6 +115,8 @@ int *gen_maze() {
 }
 
 int main() {
+    srand(time(NULL));
+
     int *maze = gen_maze();
 
     for (int y = 0; y < maze_size * 2 + 1; y++) {
