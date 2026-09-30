@@ -73,14 +73,20 @@ int *gen_maze() {
             if (dots[i] == 1) {
                 int *edge_and_dots = get_dot_edges(i);
                 for (int j = 0; j < 4; j++) {
-                    if (edges[edge_and_dots[j]] == 0 && dots[edge_and_dots[j+4]] == 0) {
-                        if (edge_weights[edge_and_dots[j]] < min_weight) {
-                            min_weight = edge_weights[edge_and_dots[j]];
-                            min_weight_edge_idx = edge_and_dots[j];
-                            min_weight_edge_dot_idx = edge_and_dots[j+4];
+                    int edge_id = edge_and_dots[j];
+                    int next_dot_id = edge_and_dots[j + 4];
+                    if (edge_id == -1 || next_dot_id == -1) {
+                        continue;
+                    }
+                    if (edges[edge_id] == 0 && dots[next_dot_id] == 0) {
+                        if (edge_weights[edge_id] < min_weight) {
+                            min_weight = edge_weights[edge_id];
+                            min_weight_edge_idx = edge_id;
+                            min_weight_edge_dot_idx = next_dot_id;
                         }
                     }
                 }
+                free(edge_and_dots);
             }
         }
         edges[min_weight_edge_idx] = 1;
