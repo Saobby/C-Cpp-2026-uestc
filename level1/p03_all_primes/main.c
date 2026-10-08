@@ -20,6 +20,7 @@ int main() {
         }
     }
     clock_gettime(CLOCK_REALTIME, &end);
-    printf("%ld us\n", (end.tv_nsec-start.tv_nsec) / 1000);
+    double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+    printf("%.6f s\n", elapsed);
     return 0;
 }
