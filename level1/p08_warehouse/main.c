@@ -114,7 +114,9 @@ int main() {
         printf("3=保存并退出\n");
         printf("请输入:");
         char input[16];
-        fgets(input, sizeof(input), stdin);
+        if (fgets(input, sizeof(input), stdin) == NULL) {
+            break;
+        };
         input[strcspn(input, "\n")] = '\0';
         const int action_num = atoi(input);
         switch (action_num) {
