@@ -6,7 +6,9 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_executable(p01_running_letter level1/p01_running_letter/main.c)
 
-add_executable(p02_is_prime  level1/p02_is_prime/main.c)
+add_executable(p02_is_prime  level1/p02_is_prime/main.c
+        level1/p02_is_prime/is_prime.c
+        level1/p02_is_prime/is_prime.h)
 
 target_link_libraries(p02_is_prime m)
 

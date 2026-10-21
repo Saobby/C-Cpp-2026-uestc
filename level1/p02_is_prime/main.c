@@ -1,25 +1,14 @@
 #include <stdio.h>
-#include <math.h>
+#include "is_prime.h"
 
 int main() {
     int my_num;
     printf("Enter a number: ");
     scanf("%d", &my_num);
 
-    int is_prime = 1;
+    const int result = is_prime(my_num);
 
-    if (my_num < 2) {
-        is_prime = 0;
-    }else {
-        for (int i = 2; i <= sqrt(my_num); i++) {
-            if (my_num % i == 0) {
-                is_prime = 0;
-                break;
-            }
-        }
-    }
-
-    if (is_prime) {
+    if (result) {
         printf("%d is a prime number.\n", my_num);
     } else {
         printf("%d is not a prime number.\n", my_num);
