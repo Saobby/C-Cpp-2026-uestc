@@ -103,21 +103,37 @@ static int load_from_file() {
     return 0;
 }
 
+static int input_str(char *input, const int size) {
+    if (fgets(input, size, stdin) == NULL) {
+        return -1;
+    };
+    if (strchr(input, '\n') == NULL) {
+        while (1) {
+            const char c = getchar();
+            if (c == EOF || c == '\n') {
+                break;
+            }
+        }
+    }
+    input[strcspn(input, "\n")] = '\0';
+    return 0;
+}
+
 int main() {
     load_from_file();
     int quit = 0;
     while (quit == 0) {
         printf("欢迎使用仓储管理系统!!!输入数字选择功能:\n");
-        printf("0=列出库存\n");
+        printf("0=列出库存(默认)\n");
         printf("1=入库\n");
         printf("2=出库\n");
         printf("3=保存并退出\n");
         printf("请输入:");
         char input[16];
-        if (fgets(input, sizeof(input), stdin) == NULL) {
+        const int rsp = input_str(input, sizeof(input));
+        if (rsp == -1) {
             break;
-        };
-        input[strcspn(input, "\n")] = '\0';
+        }
         const int action_num = atoi(input);
         switch (action_num) {
             case 0:
@@ -126,12 +142,16 @@ int main() {
             case 1:
                 char model[16];
                 printf("请输入型号:");
-                fgets(model, sizeof(model), stdin);
-                model[strcspn(model, "\n")] = '\0';
+                const int rsp2 = input_str(model, sizeof(model));
+                if (rsp2 == -1) {
+                    break;
+                }
                 printf("请输入数目:");
                 char input2[16];
-                fgets(input2, sizeof(input2), stdin);
-                input2[strcspn(input2, "\n")] = '\0';
+                const int rsp3 = input_str(input2, sizeof(input2));
+                if (rsp3 == -1) {
+                    break;
+                }
                 const int amount = atoi(input2);
                 if (strcmp(model, "") == 0) {
                     printf("抱歉!型号不能为空!\n");
@@ -151,12 +171,16 @@ int main() {
             case 2:
                 char model2[16];
                 printf("请输入型号:");
-                fgets(model2, sizeof(model2), stdin);
-                model2[strcspn(model2, "\n")] = '\0';
+                const int rsp4 = input_str(model2, sizeof(model2));
+                if (rsp4 == -1) {
+                    break;
+                }
                 printf("请输入数目:");
                 char input3[16];
-                fgets(input3, sizeof(input3), stdin);
-                input3[strcspn(input3, "\n")] = '\0';
+                const int rsp5 = input_str(input3, sizeof(input3));
+                if (rsp5 == -1) {
+                    break;
+                }
                 const int amount2 = atoi(input3);
                 if (strcmp(model2, "") == 0) {
                     printf("抱歉!型号不能为空!\n");
@@ -166,8 +190,8 @@ int main() {
                     printf("抱歉!数目必须大于0!\n");
                     break;
                 }
-                const int rsp2 = export_item(model2, amount2);
-                if (rsp2 == -1) {
+                const int rsp6 = export_item(model2, amount2);
+                if (rsp6 == -1) {
                     printf("抱歉!库存不够!\n");
                     break;
                 }
@@ -180,5 +204,6 @@ int main() {
         }
     }
     save_to_file();
+    printf("保存成功!\n");
     return 0;
 }
