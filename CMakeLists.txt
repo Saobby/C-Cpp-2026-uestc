@@ -33,4 +33,8 @@ add_executable(p10_zoo_cpp  level1/p10_zoo_cpp/main.cpp)
 add_executable(five_in_a_row 课程设计/main.c
         课程设计/game_engine.c
         课程设计/game_engine.h
+        课程设计/evaluator.c
+        课程设计/evaluator.h
+        课程设计/stack.c
+        课程设计/stack.h
 )
