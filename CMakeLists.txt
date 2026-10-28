@@ -29,3 +29,8 @@ add_executable(p08_warehouse  level1/p08_warehouse/main.c)
 add_executable(p09_safe_array_cpp  level1/p09_safe_array_cpp/main.cpp)
 
 add_executable(p10_zoo_cpp  level1/p10_zoo_cpp/main.cpp)
+
+add_executable(five_in_a_row 课程设计/main.c
+        课程设计/game_engine.c
+        课程设计/game_engine.h
+)
