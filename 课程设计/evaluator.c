@@ -5,6 +5,7 @@
 #include "evaluator.h"
 
 #include <stdlib.h>
+#include <math.h>
 
 #include "stack.h"
 
@@ -18,7 +19,7 @@ static const int pattern_scores[] = {
         (int)1e3   // 活2
 };
 
-static const int corr_multiplier = 10; // 如果落子一次同时出现了多个模式，则加分=多个模式分数之和*corr_multiplier
+static const int corr_multiplier = 10; // 如果落子一次同时出现了多个模式，则加分=多个模式分数之和*corr_multiplier^模式数
 
 int is_sub_array(const int * big_array, const int big_len, const int * small_array, const int small_len) {
     for (int offset = 0; offset <= big_len - small_len; offset++) {
@@ -160,6 +161,10 @@ FindBasicPatternResult find_basic_pattern(const int * board, const int stone_typ
         }
         FindBasicPatternResult result;
         result.pattern_type = pattern_type;
+        for (int j = 0; j < 6; j++) {
+            result.stone_pos[j][0] = -1;
+            result.stone_pos[j][1] = -1;
+        }
         for (int j = 0; j < pattern_len; j++) {
             result.stone_pos[j][0] = curr_pattern_pos[offset + j][0];
             result.stone_pos[j][1] = curr_pattern_pos[offset + j][1];
@@ -171,44 +176,84 @@ FindBasicPatternResult find_basic_pattern(const int * board, const int stone_typ
     return result;
 }
 
-State * create_state(int * board, PatternMap * pattern_map, const int basic_score, const int bonus_score) {
+State * create_state(int * board, const int score) {
     State * state = malloc(sizeof(State));
     state->board = board;
-    state->pattern_map = pattern_map;
-    state->basic_score = basic_score;
-    state->bonus_score = bonus_score;
+    state->score = score;
     return state;
 }
 
-int reverse_color(const int color) {
-    return color == 1 ? -1 : 1;
-}
-
-int calc_delta(const int * board, const int x, const int y) {
-    int delta = 0;
+int evaluate(const int * board) {
+    const int target_colors[] = {-1, 1};
+    int checked_pos[2][15 * 15][4] = {0};  // 结构: [颜色][坐标索引][方向]，用于记录每个点在每个方向上是否已经检查过
+    int checked_pos2[2][15 * 15] = {0};  // 同上
+    int crossing_points[2][15 * 15][2] = {-1};  // 结构: [颜色][交叉点索引][坐标]
+    int crossing_points_count[2] = {0};  // 结构: [颜色][交叉点数量]
+    int score = 0;
+    // 计算基础分并找出交叉点
     for (int i = 0; i < 2; i++) {
-        const int target_colors[] = {-1, 1};
         const int target_color = target_colors[i];
-        for (int direction = 1; direction <= 4; direction++) {
-            const FindBasicPatternResult old_pattern = find_basic_pattern(board, target_color, x, y, direction);
-            if (old_pattern.pattern_type == 0) {
-                continue;
+        for (int y = 0; y < 15; y++) {
+            for (int x = 0; x < 15; x++) {
+                const int idx = y * 15 + x;
+                for (int direction = 1; direction <= 4; direction++) {
+                    if (checked_pos[i][idx][direction - 1]) {
+                        continue;
+                    }
+                    const FindBasicPatternResult pattern = find_basic_pattern(board, target_color, x, y, direction);
+                    if (pattern.pattern_type == 0) {
+                        continue;
+                    }
+                    score += target_color * pattern_scores[pattern.pattern_type];  // 基础分
+                    // 记录交叉点
+                    for (int j = 0; j < 6; j++) {
+                        const int pos_x = pattern.stone_pos[j][0];
+                        const int pos_y = pattern.stone_pos[j][1];
+                        if (pos_x == -1 || pos_y == -1) {
+                            continue;
+                        }
+                        const int pos_idx = pos_y * 15 + pos_x;
+                        if (checked_pos2[i][pos_idx]) {
+                            // 交叉点
+                            crossing_points[i][crossing_points_count[i]][0] = pos_x;
+                            crossing_points[i][crossing_points_count[i]][1] = pos_y;
+                            crossing_points_count[i]++;
+                        } else {
+                            checked_pos2[i][pos_idx] = 1;
+                        }
+                    }
+                    // 记录已检查过的点的方向
+                    checked_pos[i][idx][direction - 1] = 1;
+                }
             }
-            delta += target_color * pattern_scores[old_pattern.pattern_type];
         }
     }
-    return delta;
+    for (int i = 0; i < 2; i++) {
+        const int target_color = target_colors[i];
+        for (int j = 0; j < crossing_points_count[i]; j++) {
+            int tmp_sum = 0;
+            int pattern_count = 0;
+            const int x = crossing_points[i][j][0];
+            const int y = crossing_points[i][j][1];
+            for (int direction = 1; direction <= 4; direction++) {
+                const FindBasicPatternResult pattern = find_basic_pattern(board, target_color, x, y, direction);
+                if (pattern.pattern_type == 0) {
+                    continue;
+                }
+                tmp_sum += pattern_scores[pattern.pattern_type];
+                pattern_count++;
+            }
+            score += target_color * tmp_sum * (int)pow(corr_multiplier, pattern_count);
+        }
+    }
+    return score;
 }
 
 int move_and_update_state(State * state, const int x, const int y, const int color) {
     if (state->board[y * 15 + x] != 0) {
         return -1;
     }
-    state->basic_score -= calc_delta(state->board, x, y);
     move(state->board, x, y, color);
-    state->basic_score += calc_delta(state->board, x, y);
+    state->score = evaluate(state->board);
     return 0;
 }
-
-
-// TODO: 实现更新棋盘状态功能：落子后寻找落子位置的基本模式，如果有，检查新模式中包含的棋子是否包含旧模式，如果是就删除旧模式，保留新模式
