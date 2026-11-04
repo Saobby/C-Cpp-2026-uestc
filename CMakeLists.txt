@@ -37,4 +37,6 @@ add_executable(five_in_a_row 课程设计/main.c
         课程设计/evaluator.h
         课程设计/stack.c
         课程设计/stack.h
+        课程设计/pattern_map.c
+        课程设计/pattern_map.h
 )

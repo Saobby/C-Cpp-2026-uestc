@@ -5,34 +5,18 @@
 #include <stdio.h>
 
 #include "game_engine.h"
+#include "pattern_map.h"
+#include "evaluator.h"
 
-int board[15 * 15] = {0};
+static int board[15 * 15] = {0};
+static PatternMap * pattern_map = NULL;
+static State * state = NULL;
 
 int main() {
-    print_board(board);
-    printf("Result: %d\n", move(board, 7, 7, 1));
-    print_board(board);
-    printf("Result: %d\n", move(board, 8, 8, -1));
-    print_board(board);
+    pattern_map = create_pattern_map();
 
-    printf("Result: %d\n", move(board, 7, 8, 1));
-    print_board(board);
-    printf("Result: %d\n", move(board, 9, 9, -1));
-    print_board(board);
+    state = create_state(board, pattern_map, 0, 0);
 
-    printf("Result: %d\n", move(board, 7, 9, 1));
-    print_board(board);
-    printf("Result: %d\n", move(board, 10, 10, -1));
-    print_board(board);
 
-    printf("Result: %d\n", move(board, 7, 10, 1));
-    print_board(board);
-    printf("Result: %d\n", move(board, 11, 11, -1));
-    print_board(board);
-
-    printf("Result: %d\n", move(board, 7, 11, 1));
-    print_board(board);
-    printf("Result: %d\n", move(board, 11, 10, -1));
-    print_board(board);
     return 0;
 }
