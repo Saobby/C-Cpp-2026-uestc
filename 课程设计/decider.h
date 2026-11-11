@@ -1,0 +1,15 @@
+//
+// Created by stguable on 2026/11/11.
+//
+
+#ifndef CCPP2026_DECIDER_H
+#define CCPP2026_DECIDER_H
+
+typedef struct Pos {
+    int x;
+    int y;
+}Pos;
+
+Pos * generate_moves(const int * board, int color);
+
+#endif //CCPP2026_DECIDER_H

@@ -33,7 +33,7 @@ int is_sub_array(const int * big_array, const int big_len, const int * small_arr
     return -1;
 }
 
-FindBasicPatternResult find_basic_pattern(const int * board, const int stone_type, const int x, const int y, const int direction) {
+Pattern find_basic_pattern(const int * board, const int stone_type, const int x, const int y, const int direction) {
     // 在给定方向，以给定中心，寻找基本模式
     // 模式类型:
     // 0: 未找到  1: 活4  2: 跳3  3: 连5  4: 冲4  5: 活3  6: 活2
@@ -159,7 +159,7 @@ FindBasicPatternResult find_basic_pattern(const int * board, const int stone_typ
         if (offset == -1) {
             continue;
         }
-        FindBasicPatternResult result;
+        Pattern result;
         result.pattern_type = pattern_type;
         for (int j = 0; j < 6; j++) {
             result.stone_pos[j][0] = -1;
@@ -171,7 +171,7 @@ FindBasicPatternResult find_basic_pattern(const int * board, const int stone_typ
         }
         return result;
     }
-    FindBasicPatternResult result;
+    Pattern result;
     result.pattern_type = 0;
     return result;
 }
@@ -200,7 +200,7 @@ int evaluate(const int * board) {
                     if (checked_pos[i][idx][direction - 1]) {
                         continue;
                     }
-                    const FindBasicPatternResult pattern = find_basic_pattern(board, target_color, x, y, direction);
+                    const Pattern pattern = find_basic_pattern(board, target_color, x, y, direction);
                     if (pattern.pattern_type == 0) {
                         continue;
                     }
@@ -237,7 +237,7 @@ int evaluate(const int * board) {
             const int x = crossing_points[i][j][0];
             const int y = crossing_points[i][j][1];
             for (int direction = 1; direction <= 4; direction++) {
-                const FindBasicPatternResult pattern = find_basic_pattern(board, target_color, x, y, direction);
+                const Pattern pattern = find_basic_pattern(board, target_color, x, y, direction);
                 if (pattern.pattern_type == 0) {
                     continue;
                 }
@@ -249,6 +249,45 @@ int evaluate(const int * board) {
     }
     return score;
 }
+
+
+Pattern * find_basic_patterns(const int * board, const int target_color) {
+    Pattern results[15 * 15];
+    for (int i = 0; i < 15 * 15; i++) {
+        results[i].pattern_type = 0;
+    }
+    int count = 0;
+    int checked_pos[15 * 15][4] = {0};  // 结构: [坐标索引][方向]，用于记录每个点在每个方向上是否已经检查过
+    for (int y = 0; y < 15; y++) {
+        for (int x = 0; x < 15; x++) {
+            const int idx = y * 15 + x;
+            for (int direction = 1; direction <= 4; direction++) {
+                if (checked_pos[idx][direction - 1]) {
+                    continue;
+                }
+                const Pattern pattern = find_basic_pattern(board, target_color, x, y, direction);
+                if (pattern.pattern_type == 0) {
+                    continue;
+                }
+                results[count] = pattern;
+                count++;
+                // 记录已检查过的方向
+                for (int j = 0; j < 6; j++) {
+                    const int pos_x = pattern.stone_pos[j][0];
+                    const int pos_y = pattern.stone_pos[j][1];
+                    if (pos_x == -1 || pos_y == -1) {
+                        continue;
+                    }
+                    const int pos_idx = pos_y * 15 + pos_x;
+                    // 记录已检查过的点的方向
+                    checked_pos[pos_idx][direction - 1] = 1;
+                }
+            }
+        }
+    }
+    return results;
+}
+
 
 int move_and_update_state(State * state, const int x, const int y, const int color) {
     if (state->board[y * 15 + x] != 0) {

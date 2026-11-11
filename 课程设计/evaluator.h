@@ -6,10 +6,10 @@
 #define CCPP2026_EVALUATOR_H
 #include "game_engine.h"
 
-typedef struct FindBasicPatternResult {
+typedef struct Pattern {
     int pattern_type;
     int stone_pos[6][2];
-}FindBasicPatternResult;
+}Pattern;
 
 typedef struct State {
     int * board;
@@ -18,12 +18,14 @@ typedef struct State {
 
 int is_sub_array(const int * big_array, int big_len, const int * small_array, int small_len);
 
-FindBasicPatternResult find_basic_pattern(const int * board, int stone_type, int x, int y, int direction);
+Pattern find_basic_pattern(const int * board, int stone_type, int x, int y, int direction);
 
 State * create_state(int * board, int score);
 
 int move_and_update_state(State * state, int x, int y, int color);
 
 int evaluate(const int * board);
+
+Pattern * find_basic_patterns(const int * board, int target_color);
 
 #endif //CCPP2026_EVALUATOR_H
