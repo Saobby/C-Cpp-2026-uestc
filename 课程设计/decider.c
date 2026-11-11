@@ -102,3 +102,67 @@ Pos * generate_moves(const int * board, const int color) {
     }
     return moves;
 }
+
+
+int negamax(int * board, const int depth, int alpha, const int beta, const int color) {
+    if (depth == 0) {
+        return color * evaluate(board);
+    }
+    int best_score = -2147483648;
+    const Pos * moves = generate_moves(board, color);
+    for (int i = 0; i < 15 * 15; i++) {
+        const Pos pos = moves[i];
+        if (pos.x == -1 || pos.y == -1) {
+            continue;
+        }
+        int score;
+        const int rsp = move(board, pos.x, pos.y, color);
+        if (rsp == 1 || rsp == 2) {
+            score = color * evaluate(board);
+        }else {
+            score = -negamax(board, depth - 1, -beta, -alpha, -color);
+        }
+        unmove(board, pos.x, pos.y);
+        if (score > best_score) {
+            best_score = score;
+        }
+        if (score > alpha) {
+            alpha = score;
+        }
+        if (alpha >= beta) {
+            break;
+        }
+    }
+    return best_score;
+}
+
+
+Pos search(int * board, const int color) {
+    int best_score = -2147483648;
+    Pos best_pos;
+    best_pos.x = -1;
+    best_pos.y = -1;
+    const Pos * moves = generate_moves(board, color);
+    if (moves[0].x == -1 || moves[0].y == -1) {
+        return moves[0];  // 错误，没有可落子点。
+    }
+    // 检查能否立马胜利
+    const int rsp = move(board, moves[0].x, moves[0].y, color);
+    unmove(board, moves[0].x, moves[0].y);
+    if ((color == 1 && rsp == 1) || (color == -1 && rsp == 2)) {
+        return moves[0];
+    }
+    for (int i = 0; i < 15 * 15; i++) {
+        const Pos pos = moves[i];
+        if (pos.x == -1 || pos.y == -1) {
+            continue;
+        }
+        const int score = negamax(board, SEARCH_DEPTH, -2147483648, 2147483647, color);
+        unmove(board, pos.x, pos.y);
+        if (score > best_score) {
+            best_score = score;
+            best_pos = pos;
+        }
+    }
+    return best_pos;
+}

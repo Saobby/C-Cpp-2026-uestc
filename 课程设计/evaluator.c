@@ -13,7 +13,7 @@ static const int pattern_scores[] = {
         0,  // 未找到
         (int)1e6,  // 活4
         (int)1e4,  // 跳3
-        (int)1e8,  // 连5
+        (int)1e9,  // 连5
         (int)1e5,  // 冲4
         (int)1e4,  // 活3
         (int)1e3   // 活2

@@ -64,6 +64,15 @@ int move(int * board, const int x, const int y, const int color) {
     return 0;
 }
 
+int unmove(int * board, const int x, const int y) {
+    const int idx = y * 15 + x;
+    if (board[idx] == 0) {
+        return -1;
+    }
+    board[idx] = 0;
+    return 0;
+}
+
 void print_board(const int * board) {
     for (int y = 0; y < 15; y++) {
         for (int x = 0; x < 15; x++) {

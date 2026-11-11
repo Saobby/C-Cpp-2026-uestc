@@ -11,4 +11,6 @@ int move(int * board, int x, int y, int color);
 
 void print_board(const int * board);
 
+int unmove(int * board, int x, int y);
+
 #endif //CCPP2026_GAME_ENGINE_H
