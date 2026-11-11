@@ -76,7 +76,7 @@ FindBasicPatternResult find_basic_pattern(const int * board, const int stone_typ
     Stack * half_pattern = create_stack(15);
     Stack * half_pattern_pos_x = create_stack(15);
     Stack * half_pattern_pos_y = create_stack(15);
-    while (curr_x >= 0 && curr_x <= 14 && curr_y >= 0 && curr_y <= 14 && board[idx] != stone_type && blank_count < 2) {
+    while (curr_x >= 0 && curr_x <= 14 && curr_y >= 0 && curr_y <= 14 && board[idx] != -stone_type && blank_count < 2) {
         const int val = board[idx];
         if (val == 0) {
             push(half_pattern, 0);
@@ -114,7 +114,7 @@ FindBasicPatternResult find_basic_pattern(const int * board, const int stone_typ
     curr_y = y + dir_y;
     blank_count = 0;
     idx = curr_y * 15 + curr_x;
-    while (curr_x >= 0 && curr_x <= 14 && curr_y >= 0 && curr_y <= 14 && board[idx] != stone_type && blank_count < 2) {
+    while (curr_x >= 0 && curr_x <= 14 && curr_y >= 0 && curr_y <= 14 && board[idx] != -stone_type && blank_count < 2) {
         const int val = board[idx];
         if (val == 0) {
             curr_pattern[i] = 0;
@@ -205,7 +205,7 @@ int evaluate(const int * board) {
                         continue;
                     }
                     score += target_color * pattern_scores[pattern.pattern_type];  // 基础分
-                    // 记录交叉点
+                    // 记录已检查过的方向和交叉点
                     for (int j = 0; j < 6; j++) {
                         const int pos_x = pattern.stone_pos[j][0];
                         const int pos_y = pattern.stone_pos[j][1];
@@ -213,6 +213,9 @@ int evaluate(const int * board) {
                             continue;
                         }
                         const int pos_idx = pos_y * 15 + pos_x;
+                        // 记录已检查过的点的方向
+                        checked_pos[i][pos_idx][direction - 1] = 1;
+                        // 记录交叉点
                         if (checked_pos2[i][pos_idx]) {
                             // 交叉点
                             crossing_points[i][crossing_points_count[i]][0] = pos_x;
@@ -222,8 +225,6 @@ int evaluate(const int * board) {
                             checked_pos2[i][pos_idx] = 1;
                         }
                     }
-                    // 记录已检查过的点的方向
-                    checked_pos[i][idx][direction - 1] = 1;
                 }
             }
         }
