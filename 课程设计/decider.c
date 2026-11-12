@@ -163,6 +163,11 @@ Pos search(int * board, const int color) {
         if (pos.x == -1 || pos.y == -1) {
             continue;
         }
+        const int rsp = move(board, pos.x, pos.y, color);
+        if ((color == 1 && rsp == 1) || (color == -1 && rsp == 2)) {  // 检查是否能立马胜利
+            unmove(board, pos.x, pos.y);
+            return pos;
+        }
         const int score = negamax(board, SEARCH_DEPTH, -2147483648, 2147483647, color);
         unmove(board, pos.x, pos.y);
         if (score > best_score) {
