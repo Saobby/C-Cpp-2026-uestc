@@ -19,16 +19,20 @@ static const int pattern_scores[] = {
         (int)1e3   // 活2
 };
 
-static const int corr_multiplier = 10; // 如果落子一次同时出现了多个模式，则加分=多个模式分数之和*corr_multiplier^模式数
+static const int corr_multiplier = 10; // 如果落子一次同时出现了多个模式，则加分=多个模式分数之和*corr_multiplier^(模式数-1)
 
 int is_sub_array(const int * big_array, const int big_len, const int * small_array, const int small_len) {
     for (int offset = 0; offset <= big_len - small_len; offset++) {
+        int ok = 1;
         for (int i = 0; i < small_len; i++) {
             if (big_array[offset + i] != small_array[i]) {
-                return -1;
+                ok = 0;
+                break;
             }
         }
-        return offset;
+        if (ok == 1) {
+            return offset;
+        }
     }
     return -1;
 }
@@ -67,8 +71,15 @@ Pattern find_basic_pattern(const int * board, const int stone_type, const int x,
 
     // 生成待匹配的模式
     // 上半部分
-    int curr_pattern[15] = {-1};  // -1: 未定义  0: 空格  1: 落子
-    int curr_pattern_pos[15][2] = {{-1, -1}};  // 存储每个位置的坐标
+    int curr_pattern[15]; // -1: 未定义  0: 空格  1: 落子
+    for (int i = 0; i < 15; i++) {
+        curr_pattern[i] = -1;
+    }
+    int curr_pattern_pos[15][2];  // 存储每个位置的坐标
+    for (int i = 0; i < 15; i++) {
+        curr_pattern_pos[i][0] = -1;
+        curr_pattern_pos[i][1] = -1;
+    }
     int curr_x = x;
     int curr_y = y;
     int blank_count = 0;
@@ -180,7 +191,13 @@ int evaluate(const int * board) {
     const int target_colors[] = {-1, 1};
     int checked_pos[2][15 * 15][4] = {0};  // 结构: [颜色][坐标索引][方向]，用于记录每个点在每个方向上是否已经检查过
     int checked_pos2[2][15 * 15] = {0};  // 同上
-    int crossing_points[2][15 * 15][2] = {-1};  // 结构: [颜色][交叉点索引][坐标]
+    int crossing_points[2][15 * 15][2];  // 结构: [颜色][交叉点索引][坐标]
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 15 * 15; j++) {
+            crossing_points[i][j][0] = -1;
+            crossing_points[i][j][1] = -1;
+        }
+    }
     int crossing_points_count[2] = {0};  // 结构: [颜色][交叉点数量]
     int score = 0;
     // 计算基础分并找出交叉点
@@ -189,6 +206,9 @@ int evaluate(const int * board) {
         for (int y = 0; y < 15; y++) {
             for (int x = 0; x < 15; x++) {
                 const int idx = y * 15 + x;
+                if (board[idx] != target_color) {
+                    continue;
+                }
                 for (int direction = 1; direction <= 4; direction++) {
                     if (checked_pos[i][idx][direction - 1]) {
                         continue;
@@ -237,7 +257,7 @@ int evaluate(const int * board) {
                 tmp_sum += pattern_scores[pattern.pattern_type];
                 pattern_count++;
             }
-            score += target_color * tmp_sum * (int)pow(corr_multiplier, pattern_count);
+            score += target_color * tmp_sum * (int)pow(corr_multiplier, pattern_count-1);
         }
     }
     return score;
@@ -253,6 +273,9 @@ int find_basic_patterns(const int * board, const int target_color, Pattern * res
     for (int y = 0; y < 15; y++) {
         for (int x = 0; x < 15; x++) {
             const int idx = y * 15 + x;
+            if (board[idx] != target_color) {
+                continue;
+            }
             for (int direction = 1; direction <= 4; direction++) {
                 if (checked_pos[idx][direction - 1]) {
                     continue;

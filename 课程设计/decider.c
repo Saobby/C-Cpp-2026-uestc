@@ -52,7 +52,7 @@ int generate_moves(const int * board, const int color, Pos * moves) {
     // 能防止对方形成活4的点优先
     for (int i = 0; i < 15 * 15; i++) {
         const Pattern pattern = patterns2[i];
-        if (pattern.pattern_type == 2 || pattern.pattern_type == 5) {  // 活4️或冲4
+        if (pattern.pattern_type == 2 || pattern.pattern_type == 5) {  // 活3或跳3
             for (int j = 0; j < 6; j++) {
                 const int pos_x = pattern.stone_pos[i][0];
                 const int pos_y = pattern.stone_pos[i][1];
