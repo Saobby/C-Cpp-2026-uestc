@@ -6,12 +6,12 @@
 #define CCPP2026_STACK_H
 
 typedef struct {
-    int *data;
+    int data[15];
     int size;
     int count;
 }Stack;
 
-Stack * create_stack(int size);
+int init_stack(Stack * stack);
 
 int push(Stack * stack, int val);
 

@@ -3,10 +3,7 @@
 //
 
 #include "evaluator.h"
-
-#include <stdlib.h>
 #include <math.h>
-
 #include "stack.h"
 
 static const int pattern_scores[] = {
@@ -84,20 +81,23 @@ Pattern find_basic_pattern(const int * board, const int stone_type, const int x,
     int curr_y = y;
     int blank_count = 0;
     int idx = curr_y * 15 + curr_x;
-    Stack * half_pattern = create_stack(15);
-    Stack * half_pattern_pos_x = create_stack(15);
-    Stack * half_pattern_pos_y = create_stack(15);
+    Stack half_pattern;
+    init_stack(&half_pattern);
+    Stack half_pattern_pos_x;
+    init_stack(&half_pattern_pos_x);
+    Stack half_pattern_pos_y;
+    init_stack(&half_pattern_pos_y);
     while (curr_x >= 0 && curr_x <= 14 && curr_y >= 0 && curr_y <= 14 && board[idx] != -stone_type && blank_count < 2) {
         const int val = board[idx];
         if (val == 0) {
-            push(half_pattern, 0);
-            push(half_pattern_pos_x, curr_x);
-            push(half_pattern_pos_y, curr_y);
+            push(&half_pattern, 0);
+            push(&half_pattern_pos_x, curr_x);
+            push(&half_pattern_pos_y, curr_y);
             blank_count++;
         }else {
-            push(half_pattern, 1);
-            push(half_pattern_pos_x, curr_x);
-            push(half_pattern_pos_y, curr_y);
+            push(&half_pattern, 1);
+            push(&half_pattern_pos_x, curr_x);
+            push(&half_pattern_pos_y, curr_y);
             blank_count = 0;
         }
         curr_x -= dir_x;
@@ -106,9 +106,9 @@ Pattern find_basic_pattern(const int * board, const int stone_type, const int x,
     }
     int i = 0;
     while (1) {
-        const int val = pop(half_pattern);
-        const int pos_x = pop(half_pattern_pos_x);
-        const int pos_y = pop(half_pattern_pos_y);
+        const int val = pop(&half_pattern);
+        const int pos_x = pop(&half_pattern_pos_x);
+        const int pos_y = pop(&half_pattern_pos_y);
         if (val == -1) {
             break;
         }
@@ -117,9 +117,6 @@ Pattern find_basic_pattern(const int * board, const int stone_type, const int x,
         curr_pattern_pos[i][1] = pos_y;
         i++;
     }
-    free(half_pattern);
-    free(half_pattern_pos_x);
-    free(half_pattern_pos_y);
     // 下半部分
     curr_x = x + dir_x;
     curr_y = y + dir_y;

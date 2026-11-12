@@ -3,14 +3,11 @@
 //
 
 #include "stack.h"
-#include <stdlib.h>
 
-Stack * create_stack(const int size) {
-    Stack *stack = malloc(sizeof(Stack));
-    stack->data = (int *)malloc(sizeof(int) * size);
-    stack->size = size;
+int init_stack(Stack * stack) {
+    stack->size = 15;
     stack->count = 0;
-    return stack;
+    return 0;
 }
 
 
