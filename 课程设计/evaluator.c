@@ -176,13 +176,6 @@ Pattern find_basic_pattern(const int * board, const int stone_type, const int x,
     return result;
 }
 
-State * create_state(int * board, const int score) {
-    State * state = malloc(sizeof(State));
-    state->board = board;
-    state->score = score;
-    return state;
-}
-
 int evaluate(const int * board) {
     const int target_colors[] = {-1, 1};
     int checked_pos[2][15 * 15][4] = {0};  // 结构: [颜色][坐标索引][方向]，用于记录每个点在每个方向上是否已经检查过
@@ -251,10 +244,9 @@ int evaluate(const int * board) {
 }
 
 
-Pattern * find_basic_patterns(const int * board, const int target_color) {
-    Pattern results[15 * 15];
+int find_basic_patterns(const int * board, const int target_color, Pattern * results) {
     for (int i = 0; i < 15 * 15; i++) {
-        results[i].pattern_type = 0;
+        results[i] = (Pattern){.pattern_type = 0, .stone_pos = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}}};
     }
     int count = 0;
     int checked_pos[15 * 15][4] = {0};  // 结构: [坐标索引][方向]，用于记录每个点在每个方向上是否已经检查过
@@ -285,15 +277,5 @@ Pattern * find_basic_patterns(const int * board, const int target_color) {
             }
         }
     }
-    return results;
-}
-
-
-int move_and_update_state(State * state, const int x, const int y, const int color) {
-    if (state->board[y * 15 + x] != 0) {
-        return -1;
-    }
-    move(state->board, x, y, color);
-    state->score = evaluate(state->board);
     return 0;
 }

@@ -5,12 +5,15 @@
 #include "decider.h"
 #include "evaluator.h"
 
-Pos * generate_moves(const int * board, const int color) {
-    Pos moves[15 * 15] = {{.x = -1, .y = -1}};
+int generate_moves(const int * board, const int color, Pos * moves) {
+    for (int i = 0; i < 15 * 15; i++) {
+        moves[i] = (Pos){.x = -1, .y = -1};
+    }
     int count = 0;
     int added_pos[15 * 15] = {0};
     // 能直接胜利的点最优先
-    const Pattern * patterns = find_basic_patterns(board, color);
+    Pattern patterns[15 * 15];
+    find_basic_patterns(board, color, patterns);
     for (int i = 0; i < 15 * 15; i++) {
         const Pattern pattern = patterns[i];
         if (pattern.pattern_type == 1 || pattern.pattern_type == 4) {  // 活4️或冲4
@@ -28,7 +31,8 @@ Pos * generate_moves(const int * board, const int color) {
         }
     }
     // 能防止对方立马获胜的点优先
-    const Pattern * patterns2 = find_basic_patterns(board, -color);
+    Pattern patterns2[15 * 15];
+    find_basic_patterns(board, -color, patterns2);
     for (int i = 0; i < 15 * 15; i++) {
         const Pattern pattern = patterns2[i];
         if (pattern.pattern_type == 1 || pattern.pattern_type == 4) {  // 活4️或冲4
@@ -100,7 +104,7 @@ Pos * generate_moves(const int * board, const int color) {
             }
         }
     }
-    return moves;
+    return 0;
 }
 
 
@@ -109,7 +113,8 @@ int negamax(int * board, const int depth, int alpha, const int beta, const int c
         return color * evaluate(board);
     }
     int best_score = -2147483648;
-    const Pos * moves = generate_moves(board, color);
+    Pos moves[15 * 15];
+    generate_moves(board, color, moves);
     for (int i = 0; i < 15 * 15; i++) {
         const Pos pos = moves[i];
         if (pos.x == -1 || pos.y == -1) {
@@ -142,7 +147,8 @@ Pos search(int * board, const int color) {
     Pos best_pos;
     best_pos.x = -1;
     best_pos.y = -1;
-    const Pos * moves = generate_moves(board, color);
+    Pos moves[15 * 15];
+    generate_moves(board, color, moves);
     if (moves[0].x == -1 || moves[0].y == -1) {
         return moves[0];  // 错误，没有可落子点。
     }

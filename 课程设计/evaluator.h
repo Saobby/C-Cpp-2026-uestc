@@ -11,21 +11,12 @@ typedef struct Pattern {
     int stone_pos[6][2];
 }Pattern;
 
-typedef struct State {
-    int * board;
-    int score;  // 正数表示黑棋优势，负数表示白棋优势
-}State;
-
 int is_sub_array(const int * big_array, int big_len, const int * small_array, int small_len);
 
 Pattern find_basic_pattern(const int * board, int stone_type, int x, int y, int direction);
 
-State * create_state(int * board, int score);
-
-int move_and_update_state(State * state, int x, int y, int color);
-
 int evaluate(const int * board);
 
-Pattern * find_basic_patterns(const int * board, int target_color);
+int find_basic_patterns(const int * board, int target_color, Pattern * results);
 
 #endif //CCPP2026_EVALUATOR_H

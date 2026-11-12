@@ -42,3 +42,14 @@ add_executable(five_in_a_row 课程设计/main.c
 )
 
 target_link_libraries(five_in_a_row m)
+
+target_compile_options(five_in_a_row PRIVATE
+        -fsanitize=address
+        -fno-omit-frame-pointer
+        -g
+        -O1
+)
+
+target_link_options(five_in_a_row PRIVATE
+        -fsanitize=address
+)

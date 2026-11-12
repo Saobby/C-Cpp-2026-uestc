@@ -12,7 +12,7 @@ typedef struct Pos {
     int y;
 }Pos;
 
-Pos * generate_moves(const int * board, int color);
+int generate_moves(const int * board, int color, Pos * moves);
 
 int negamax(int * board, int depth, int alpha, int beta, int color);
 
