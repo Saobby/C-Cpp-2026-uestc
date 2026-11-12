@@ -190,12 +190,13 @@ Pattern find_basic_pattern(const int * board, const int stone_type, const int x,
 int evaluate(const int * board) {
     const int target_colors[] = {-1, 1};
     int checked_pos[2][15 * 15][4] = {0};  // 结构: [颜色][坐标索引][方向]，用于记录每个点在每个方向上是否已经检查过
-    int checked_pos2[2][15 * 15] = {0};  // 同上
-    int crossing_points[2][15 * 15][2];  // 结构: [颜色][交叉点索引][坐标]
+    int crossing_count[2][15 * 15] = {0};  // 结构: [颜色][坐标索引]
+    int crossing_score_sum[2][15 * 15] = {0};  // 结构: [颜色][坐标索引]
+    int crossing_points_idx[2][15 * 15];  // 结构: [颜色][索引]
+    int crossing_points_idx_added[2][15 * 15] = {0};  // 结构: [颜色][交叉点索引]
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 15 * 15; j++) {
-            crossing_points[i][j][0] = -1;
-            crossing_points[i][j][1] = -1;
+            crossing_points_idx[i][j] = -1;
         }
     }
     int crossing_points_count[2] = {0};  // 结构: [颜色][交叉点数量]
@@ -229,13 +230,12 @@ int evaluate(const int * board) {
                         // 记录已检查过的点的方向
                         checked_pos[i][pos_idx][direction - 1] = 1;
                         // 记录交叉点
-                        if (checked_pos2[i][pos_idx]) {
-                            // 交叉点
-                            crossing_points[i][crossing_points_count[i]][0] = pos_x;
-                            crossing_points[i][crossing_points_count[i]][1] = pos_y;
+                        crossing_count[i][pos_idx]++;
+                        crossing_score_sum[i][pos_idx] += pattern_scores[pattern.pattern_type];
+                        if (crossing_points_idx_added[i][pos_idx] == 0) {
+                            crossing_points_idx[i][crossing_points_count[i]] = pos_idx;
                             crossing_points_count[i]++;
-                        } else {
-                            checked_pos2[i][pos_idx] = 1;
+                            crossing_points_idx_added[i][pos_idx] = 1;
                         }
                     }
                 }
@@ -245,19 +245,12 @@ int evaluate(const int * board) {
     for (int i = 0; i < 2; i++) {
         const int target_color = target_colors[i];
         for (int j = 0; j < crossing_points_count[i]; j++) {
-            int tmp_sum = 0;
-            int pattern_count = 0;
-            const int x = crossing_points[i][j][0];
-            const int y = crossing_points[i][j][1];
-            for (int direction = 1; direction <= 4; direction++) {
-                const Pattern pattern = find_basic_pattern(board, target_color, x, y, direction);
-                if (pattern.pattern_type == 0) {
-                    continue;
-                }
-                tmp_sum += pattern_scores[pattern.pattern_type];
-                pattern_count++;
+            const int idx = crossing_points_idx[i][j];
+            const int count = crossing_count[i][idx];
+            if (count <= 1) {
+                continue;
             }
-            score += target_color * tmp_sum * (int)pow(corr_multiplier, pattern_count-1);
+            score += target_color * crossing_score_sum[i][idx] * (int)pow(corr_multiplier, count-1);
         }
     }
     return score;
