@@ -4,7 +4,7 @@
 
 #include "evaluator.h"
 #include <math.h>
-#include "stack.h"
+#include "patterns_table_mgr.h"
 
 static const int pattern_scores[] = {
         0,  // 未找到
@@ -18,23 +18,7 @@ static const int pattern_scores[] = {
 
 static const int corr_multiplier = 10; // 如果落子一次同时出现了多个模式，则加分=多个模式分数之和*corr_multiplier^(模式数-1)
 
-int is_sub_array(const int * big_array, const int big_len, const int * small_array, const int small_len) {
-    for (int offset = 0; offset <= big_len - small_len; offset++) {
-        int ok = 1;
-        for (int i = 0; i < small_len; i++) {
-            if (big_array[offset + i] != small_array[i]) {
-                ok = 0;
-                break;
-            }
-        }
-        if (ok == 1) {
-            return offset;
-        }
-    }
-    return -1;
-}
-
-Pattern find_basic_pattern(const int * board, const int stone_type, const int x, const int y, const int direction) {
+Pattern find_basic_pattern(const Table * table, const int * board, const int stone_type, const int x, const int y, const int direction) {
     // 在给定方向，以给定中心，寻找基本模式
     // 模式类型:
     // 0: 未找到  1: 活4  2: 跳3  3: 连5  4: 冲4  5: 活3  6: 活2
@@ -67,124 +51,44 @@ Pattern find_basic_pattern(const int * board, const int stone_type, const int x,
     }
 
     // 生成待匹配的模式
-    // 上半部分
-    int curr_pattern[15]; // -1: 未定义  0: 空格  1: 落子
-    for (int i = 0; i < 15; i++) {
-        curr_pattern[i] = -1;
-    }
-    int curr_pattern_pos[15][2];  // 存储每个位置的坐标
-    for (int i = 0; i < 15; i++) {
-        curr_pattern_pos[i][0] = -1;
-        curr_pattern_pos[i][1] = -1;
-    }
-    int curr_x = x;
-    int curr_y = y;
-    int blank_count = 0;
-    int idx = curr_y * 15 + curr_x;
-    Stack half_pattern;
-    init_stack(&half_pattern);
-    Stack half_pattern_pos_x;
-    init_stack(&half_pattern_pos_x);
-    Stack half_pattern_pos_y;
-    init_stack(&half_pattern_pos_y);
-    while (curr_x >= 0 && curr_x <= 14 && curr_y >= 0 && curr_y <= 14 && board[idx] != -stone_type && blank_count < 2) {
-        const int val = board[idx];
-        if (val == 0) {
-            push(&half_pattern, 0);
-            push(&half_pattern_pos_x, curr_x);
-            push(&half_pattern_pos_y, curr_y);
-            blank_count++;
+    Pattern pattern;
+    const int start_x = x - 4 * dir_x;
+    const int start_y = y - 4 * dir_y;
+    int table_idx = 0;
+    int pos_x[9];
+    int pos_y[9];
+    for (int i = 0; i < 9; i++) {
+        const int curr_x = start_x + dir_x * i;
+        const int curr_y = start_y + dir_y * i;
+        pos_x[i] = curr_x;
+        pos_y[i] = curr_y;
+        const int idx = curr_y * 15 + curr_x;
+        int t;
+        if (board[idx] == 0) {
+            t = 0;
+        }else if (board[idx] == stone_type) {
+            t = 1;
         }else {
-            push(&half_pattern, 1);
-            push(&half_pattern_pos_x, curr_x);
-            push(&half_pattern_pos_y, curr_y);
-            blank_count = 0;
+            t = 2;
         }
-        curr_x -= dir_x;
-        curr_y -= dir_y;
-        idx = curr_y * 15 + curr_x;
+        table_idx += (int)pow(3, i) * t;
     }
-    int i = 0;
-    while (1) {
-        const int val = pop(&half_pattern);
-        const int pos_x = pop(&half_pattern_pos_x);
-        const int pos_y = pop(&half_pattern_pos_y);
-        if (val == -1) {
-            break;
-        }
-        curr_pattern[i] = val;
-        curr_pattern_pos[i][0] = pos_x;
-        curr_pattern_pos[i][1] = pos_y;
-        i++;
+    const int pattern_type = table->table[table_idx];
+    pattern.pattern_type = pattern_type;
+    if (pattern_type == 0) {
+        return pattern;
     }
-    // 下半部分
-    curr_x = x + dir_x;
-    curr_y = y + dir_y;
-    blank_count = 0;
-    idx = curr_y * 15 + curr_x;
-    while (curr_x >= 0 && curr_x <= 14 && curr_y >= 0 && curr_y <= 14 && board[idx] != -stone_type && blank_count < 2) {
-        const int val = board[idx];
-        if (val == 0) {
-            curr_pattern[i] = 0;
-            blank_count++;
-            curr_pattern_pos[i][0] = curr_x;
-            curr_pattern_pos[i][1] = curr_y;
-        }else {
-            curr_pattern[i] = 1;
-            curr_pattern_pos[i][0] = curr_x;
-            curr_pattern_pos[i][1] = curr_y;
-            blank_count = 0;
-        }
-        curr_x += dir_x;
-        curr_y += dir_y;
-        idx = curr_y * 15 + curr_x;
-        i++;
+    const int pattern_len[] = {-1, 6, 6, 5, 5, 5, 5};
+    const int offset = table->offset[pattern_type];
+    const int len = pattern_len[pattern_type];
+    for (int i = 0; i < len; i++) {
+        pattern.stone_pos[i][0] = pos_x[offset + i];
+        pattern.stone_pos[i][1] = pos_y[offset + i];
     }
-
-    // 进行匹配
-    const int * patterns[] = {
-        (int[]){0, 1, 1, 1, 1, 0},  // 活4
-        (int[]){0, 1, 1, 0, 1, 0},  // 跳3正
-        (int[]){0, 1, 0, 1, 1, 0},  // 跳3反
-        (int[]){1, 1, 1, 1, 1},  // 连5
-        (int[]){1, 1, 1, 1, 0},  // 冲4_1正
-        (int[]){0, 1, 1, 1, 1},  // 冲4_1反
-        (int[]){1, 1, 1, 0, 1},  // 冲4_2正
-        (int[]){1, 0, 1, 1, 1},  // 冲4_2反
-        (int[]){1, 1, 0, 1, 1},  // 冲4_3
-        (int[]){0, 1, 1, 1, 0},  // 活3
-        (int[]){0, 1, 1, 0, 0},   // 活2_正
-        (int[]){0, 0, 1, 1, 0}   // 活2_反
-    };
-    const int patterns_len[] = {6, 6, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5};
-    const int patterns_type[] = {1, 2, 2, 3, 4, 4, 4, 4, 4, 5, 6, 6};
-    for (int i = 0; i < 12; i++) {
-        // 遍历所有模式
-        const int * pattern = patterns[i];
-        const int pattern_len = patterns_len[i];
-        const int pattern_type = patterns_type[i];
-        const int offset = is_sub_array(curr_pattern, 15, pattern, pattern_len);
-        if (offset == -1) {
-            continue;
-        }
-        Pattern result;
-        result.pattern_type = pattern_type;
-        for (int j = 0; j < 6; j++) {
-            result.stone_pos[j][0] = -1;
-            result.stone_pos[j][1] = -1;
-        }
-        for (int j = 0; j < pattern_len; j++) {
-            result.stone_pos[j][0] = curr_pattern_pos[offset + j][0];
-            result.stone_pos[j][1] = curr_pattern_pos[offset + j][1];
-        }
-        return result;
-    }
-    Pattern result;
-    result.pattern_type = 0;
-    return result;
+    return pattern;
 }
 
-int evaluate(const int * board) {
+int evaluate(const Table * table, const int * board) {
     const int target_colors[] = {-1, 1};
     int checked_pos[2][15 * 15][4] = {0};  // 结构: [颜色][坐标索引][方向]，用于记录每个点在每个方向上是否已经检查过
     int crossing_count[2][15 * 15] = {0};  // 结构: [颜色][坐标索引]
@@ -211,7 +115,7 @@ int evaluate(const int * board) {
                     if (checked_pos[i][idx][direction - 1]) {
                         continue;
                     }
-                    const Pattern pattern = find_basic_pattern(board, target_color, x, y, direction);
+                    const Pattern pattern = find_basic_pattern(table, board, target_color, x, y, direction);
                     if (pattern.pattern_type == 0) {
                         continue;
                     }
@@ -254,7 +158,7 @@ int evaluate(const int * board) {
 }
 
 
-int find_basic_patterns(const int * board, const int target_color, Pattern * results) {
+int find_basic_patterns(const Table * table, const int * board, const int target_color, Pattern * results) {
     for (int i = 0; i < 15 * 15; i++) {
         results[i] = (Pattern){.pattern_type = 0, .stone_pos = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}}};
     }
@@ -270,7 +174,7 @@ int find_basic_patterns(const int * board, const int target_color, Pattern * res
                 if (checked_pos[idx][direction - 1]) {
                     continue;
                 }
-                const Pattern pattern = find_basic_pattern(board, target_color, x, y, direction);
+                const Pattern pattern = find_basic_pattern(table, board, target_color, x, y, direction);
                 if (pattern.pattern_type == 0) {
                     continue;
                 }

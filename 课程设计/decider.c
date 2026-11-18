@@ -4,8 +4,9 @@
 
 #include "decider.h"
 #include "evaluator.h"
+#include "game_engine.h"
 
-int generate_moves(const int * board, const int color, Pos * moves) {
+int generate_moves(const Table * table, const int * board, const int color, Pos * moves) {
     for (int i = 0; i < 15 * 15; i++) {
         moves[i] = (Pos){.x = -1, .y = -1};
     }
@@ -13,7 +14,7 @@ int generate_moves(const int * board, const int color, Pos * moves) {
     int added_pos[15 * 15] = {0};
     // 能直接胜利的点最优先
     Pattern patterns[15 * 15];
-    find_basic_patterns(board, color, patterns);
+    find_basic_patterns(table, board, color, patterns);
     for (int i = 0; i < 15 * 15; i++) {
         const Pattern pattern = patterns[i];
         if (pattern.pattern_type == 1 || pattern.pattern_type == 4) {  // 活4️或冲4
@@ -32,7 +33,7 @@ int generate_moves(const int * board, const int color, Pos * moves) {
     }
     // 能防止对方立马获胜的点优先
     Pattern patterns2[15 * 15];
-    find_basic_patterns(board, -color, patterns2);
+    find_basic_patterns(table, board, -color, patterns2);
     for (int i = 0; i < 15 * 15; i++) {
         const Pattern pattern = patterns2[i];
         if (pattern.pattern_type == 1 || pattern.pattern_type == 4) {  // 活4️或冲4
@@ -108,13 +109,13 @@ int generate_moves(const int * board, const int color, Pos * moves) {
 }
 
 
-int negamax(int * board, const int depth, int alpha, const int beta, const int color) {
+int negamax(const Table * table, int * board, const int depth, int alpha, const int beta, const int color) {
     if (depth == 0) {
-        return color * evaluate(board);
+        return color * evaluate(table, board);
     }
     int best_score = -2147483648;
     Pos moves[15 * 15];
-    generate_moves(board, color, moves);
+    generate_moves(table, board, color, moves);
     for (int i = 0; i < 15 * 15; i++) {
         const Pos pos = moves[i];
         if (pos.x == -1 || pos.y == -1) {
@@ -123,9 +124,9 @@ int negamax(int * board, const int depth, int alpha, const int beta, const int c
         int score;
         const int rsp = move(board, pos.x, pos.y, color);
         if (rsp == 1 || rsp == 2) {
-            score = color * evaluate(board);
+            score = color * evaluate(table, board);
         }else {
-            score = -negamax(board, depth - 1, -beta, -alpha, -color);
+            score = -negamax(table, board, depth - 1, -beta, -alpha, -color);
         }
         unmove(board, pos.x, pos.y);
         if (score > best_score) {
@@ -142,13 +143,13 @@ int negamax(int * board, const int depth, int alpha, const int beta, const int c
 }
 
 
-Pos search(int * board, const int color) {
+Pos search(const Table * table, int * board, const int color) {
     int best_score = -2147483648;
     Pos best_pos;
     best_pos.x = -1;
     best_pos.y = -1;
     Pos moves[15 * 15];
-    generate_moves(board, color, moves);
+    generate_moves(table, board, color, moves);
     if (moves[0].x == -1 || moves[0].y == -1) {
         return moves[0];  // 错误，没有可落子点。
     }
@@ -168,7 +169,7 @@ Pos search(int * board, const int color) {
             unmove(board, pos.x, pos.y);
             return pos;
         }
-        const int score = -negamax(board, SEARCH_DEPTH, -2147483648, 2147483647, -color);
+        const int score = -negamax(table, board, SEARCH_DEPTH, -2147483648, 2147483647, -color);
         unmove(board, pos.x, pos.y);
         if (score > best_score) {
             best_score = score;

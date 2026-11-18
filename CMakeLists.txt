@@ -35,8 +35,6 @@ add_executable(five_in_a_row 课程设计/main.c
         课程设计/game_engine.h
         课程设计/evaluator.c
         课程设计/evaluator.h
-        课程设计/stack.c
-        课程设计/stack.h
         课程设计/decider.c
         课程设计/decider.h
         课程设计/patterns_table_mgr.c

@@ -3,19 +3,33 @@
 //
 
 #include "patterns_table_mgr.h"
-
 #include <stdio.h>
-
-#include "evaluator.h"
-#include "math.h"
+#include <math.h>
 
 int get_blk_type(const int idx, const int pos) {
     return (idx % (1 << ((pos + 1) * 2))) >> (pos * 2);
 }
 
+int is_sub_array(const int * big_array, const int big_len, const int * small_array, const int small_len) {
+    for (int offset = 0; offset <= big_len - small_len; offset++) {
+        int ok = 1;
+        for (int i = 0; i < small_len; i++) {
+            if (big_array[offset + i] != small_array[i]) {
+                ok = 0;
+                break;
+            }
+        }
+        if (ok == 1) {
+            return offset;
+        }
+    }
+    return -1;
+}
+
 void gen_patterns_table(Table * table) {
     for (int i = 0; i < PATTERNS_TABLE_SIZE; i++) {
         table->table[i] = 0;
+        table->offset[i] = 0;
     }
     const int * patterns[] = {
         (int[]){0, 1, 1, 1, 1, 0},  // 活4
@@ -62,6 +76,7 @@ void gen_patterns_table(Table * table) {
                 continue;
             }
             table->table[idx] = pattern_type;
+            table->offset[idx] = offset;
             break;
         }
     }
@@ -75,8 +90,8 @@ int save_patterns_table() {
         return -1;
     }
     for (int i = 0; i < PATTERNS_TABLE_SIZE; i++) {
-        const char t = table.table[i] + '0';
-        fputc(t, fp);
+        fputc(table.table[i] + '0', fp);
+        fputc(table.offset[i] + '0', fp);
     }
     fclose(fp);
     return 0;
@@ -90,7 +105,11 @@ int load_patterns_table(Table * table) {
     int t;
     int i = 0;
     while ((t = fgetc(fp)) != EOF) {
-        table->table[i] = t - '0';
+        if (i % 2 == 0) {
+            table->table[i / 2] = t - '0';
+        }else {
+            table->offset[i / 2] = t - '0';
+        }
         i++;
     }
     return 0;
