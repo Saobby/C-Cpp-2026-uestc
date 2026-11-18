@@ -105,10 +105,11 @@ int load_patterns_table(Table * table) {
     int t;
     int i = 0;
     while ((t = fgetc(fp)) != EOF) {
+        const int s = t - '0';
         if (i % 2 == 0) {
-            table->table[i / 2] = t - '0';
+            table->table[i / 2] = s;
         }else {
-            table->offset[i / 2] = t - '0';
+            table->offset[i / 2] = s;
         }
         i++;
     }

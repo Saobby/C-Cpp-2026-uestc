@@ -79,7 +79,7 @@ Pattern find_basic_pattern(const Table * table, const int * board, const int sto
         return pattern;
     }
     const int pattern_len[] = {-1, 6, 6, 5, 5, 5, 5};
-    const int offset = table->offset[pattern_type];
+    const int offset = table->offset[table_idx];
     const int len = pattern_len[pattern_type];
     for (int i = 0; i < len; i++) {
         pattern.stone_pos[i][0] = pos_x[offset + i];
