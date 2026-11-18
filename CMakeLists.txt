@@ -39,6 +39,8 @@ add_executable(five_in_a_row 课程设计/main.c
         课程设计/stack.h
         课程设计/decider.c
         课程设计/decider.h
+        课程设计/patterns_table_mgr.c
+        课程设计/patterns_table_mgr.h
 )
 
 target_link_libraries(five_in_a_row m)
