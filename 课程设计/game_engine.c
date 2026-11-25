@@ -90,7 +90,7 @@ void print_board(const int * board) {
             } else if (board[idx] == -1) {
                 printf("O ");
             } else {
-                printf("+ ");
+                printf(". ");
             }
         }
         printf("\n");
