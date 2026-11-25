@@ -19,8 +19,11 @@ int generate_moves(const Table * table, const int * board, const int color, Pos 
         const Pattern pattern = patterns[i];
         if (pattern.pattern_type == 1 || pattern.pattern_type == 4) {  // 活4️或冲4
             for (int j = 0; j < 6; j++) {
-                const int pos_x = pattern.stone_pos[i][0];
-                const int pos_y = pattern.stone_pos[i][1];
+                const int pos_x = pattern.stone_pos[j][0];
+                const int pos_y = pattern.stone_pos[j][1];
+                if (pos_x == -1 || pos_y == -1) {
+                    continue;
+                }
                 const int idx = pos_y * 15 + pos_x;
                 if (board[idx] == 0 && added_pos[idx] == 0) {
                     added_pos[idx] = 1;
@@ -38,8 +41,11 @@ int generate_moves(const Table * table, const int * board, const int color, Pos 
         const Pattern pattern = patterns2[i];
         if (pattern.pattern_type == 1 || pattern.pattern_type == 4) {  // 活4️或冲4
             for (int j = 0; j < 6; j++) {
-                const int pos_x = pattern.stone_pos[i][0];
-                const int pos_y = pattern.stone_pos[i][1];
+                const int pos_x = pattern.stone_pos[j][0];
+                const int pos_y = pattern.stone_pos[j][1];
+                if (pos_x == -1 || pos_y == -1) {
+                    continue;
+                }
                 const int idx = pos_y * 15 + pos_x;
                 if (board[idx] == 0 && added_pos[idx] == 0) {
                     added_pos[idx] = 1;
@@ -55,8 +61,11 @@ int generate_moves(const Table * table, const int * board, const int color, Pos 
         const Pattern pattern = patterns2[i];
         if (pattern.pattern_type == 2 || pattern.pattern_type == 5) {  // 活3或跳3
             for (int j = 0; j < 6; j++) {
-                const int pos_x = pattern.stone_pos[i][0];
-                const int pos_y = pattern.stone_pos[i][1];
+                const int pos_x = pattern.stone_pos[j][0];
+                const int pos_y = pattern.stone_pos[j][1];
+                if (pos_x == -1 || pos_y == -1) {
+                    continue;
+                }
                 const int idx = pos_y * 15 + pos_x;
                 if (board[idx] == 0 && added_pos[idx] == 0) {
                     added_pos[idx] = 1;
@@ -109,11 +118,11 @@ int generate_moves(const Table * table, const int * board, const int color, Pos 
 }
 
 
-int negamax(const Table * table, int * board, const int depth, int alpha, const int beta, const int color) {
+long negamax(const Table * table, int * board, const int depth, long alpha, const long beta, const int color) {
     if (depth == 0) {
         return color * evaluate(table, board);
     }
-    int best_score = -2147483648;
+    long best_score = -(long)1e11;
     Pos moves[15 * 15];
     generate_moves(table, board, color, moves);
     for (int i = 0; i < 15 * 15; i++) {
@@ -121,7 +130,7 @@ int negamax(const Table * table, int * board, const int depth, int alpha, const 
         if (pos.x == -1 || pos.y == -1) {
             continue;
         }
-        int score;
+        long score;
         const int rsp = move(board, pos.x, pos.y, color);
         if (rsp == 1 || rsp == 2) {
             score = color * evaluate(table, board);
@@ -144,7 +153,7 @@ int negamax(const Table * table, int * board, const int depth, int alpha, const 
 
 
 Pos search(const Table * table, int * board, const int color) {
-    int best_score = -2147483648;
+    long best_score = -(long)1e11;
     Pos best_pos;
     best_pos.x = -1;
     best_pos.y = -1;
@@ -169,7 +178,7 @@ Pos search(const Table * table, int * board, const int color) {
             unmove(board, pos.x, pos.y);
             return pos;
         }
-        const int score = -negamax(table, board, SEARCH_DEPTH, -2147483648, 2147483647, -color);
+        const long score = -negamax(table, board, SEARCH_DEPTH, -(long)1e11, (long)1e11, -color);
         unmove(board, pos.x, pos.y);
         if (score > best_score) {
             best_score = score;

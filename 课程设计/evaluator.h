@@ -13,7 +13,7 @@ typedef struct Pattern {
 
 Pattern find_basic_pattern(const Table * table, const int * board, int stone_type, int x, int y, int direction);
 
-int evaluate(const Table * table, const int * board);
+long evaluate(const Table * table, const int * board);
 
 int find_basic_patterns(const Table * table, const int * board, int target_color, Pattern * results);
 

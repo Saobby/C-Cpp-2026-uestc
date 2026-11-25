@@ -17,6 +17,8 @@ int main() {
     move(board, 7, 7, 1);
     move(board, 7, 5, -1);
     move(board, 6, 6, 1);
+    move(board, 6, 4, -1);
+    move(board, 6, 7, 1);
 
     const Pos pos = search(&table, board, -1);
     printf("pos = (%d, %d)\n", pos.x, pos.y);

@@ -62,14 +62,18 @@ Pattern find_basic_pattern(const Table * table, const int * board, const int sto
         const int curr_y = start_y + dir_y * i;
         pos_x[i] = curr_x;
         pos_y[i] = curr_y;
-        const int idx = curr_y * 15 + curr_x;
         int t;
-        if (board[idx] == 0) {
-            t = 0;
-        }else if (board[idx] == stone_type) {
-            t = 1;
+        if (curr_x >= 0 && curr_x < 15 && curr_y >= 0 && curr_y < 15) {
+            const int idx = curr_y * 15 + curr_x;
+            if (board[idx] == 0) {
+                t = 0;
+            }else if (board[idx] == stone_type) {
+                t = 1;
+            }else {
+                t = 2;
+            }
         }else {
-            t = 2;
+            t = 2;  // 在棋盘边界外的位置当作敌方棋子处理
         }
         table_idx += (int)pow(3, i) * t;
     }
@@ -77,6 +81,10 @@ Pattern find_basic_pattern(const Table * table, const int * board, const int sto
     pattern.pattern_type = pattern_type;
     if (pattern_type == 0) {
         return pattern;
+    }
+    for (int i = 0; i < 6; i++) {
+        pattern.stone_pos[i][0] = -1;
+        pattern.stone_pos[i][1] = -1;
     }
     const int pattern_len[] = {-1, 6, 6, 5, 5, 5, 5};
     const int offset = table->offset[table_idx];
@@ -88,7 +96,7 @@ Pattern find_basic_pattern(const Table * table, const int * board, const int sto
     return pattern;
 }
 
-int evaluate(const Table * table, const int * board) {
+long evaluate(const Table * table, const int * board) {
     const int target_colors[] = {-1, 1};
     int checked_pos[2][15 * 15][4] = {0};  // 结构: [颜色][坐标索引][方向]，用于记录每个点在每个方向上是否已经检查过
     int crossing_count[2][15 * 15] = {0};  // 结构: [颜色][坐标索引]
@@ -101,7 +109,7 @@ int evaluate(const Table * table, const int * board) {
         }
     }
     int crossing_points_count[2] = {0};  // 结构: [颜色][交叉点数量]
-    int score = 0;
+    long score = 0;
     // 计算基础分并找出交叉点
     for (int i = 0; i < 2; i++) {
         const int target_color = target_colors[i];

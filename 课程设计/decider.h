@@ -15,7 +15,7 @@ typedef struct Pos {
 
 int generate_moves(const Table * table, const int * board, int color, Pos * moves);
 
-int negamax(const Table * table, int * board, int depth, int alpha, int beta, int color);
+long negamax(const Table * table, int * board, int depth, long alpha, long beta, int color);
 
 Pos search(const Table * table, int * board, int color);
 
