@@ -178,7 +178,7 @@ Pos search(const Table * table, int * board, const int color) {
             unmove(board, pos.x, pos.y);
             return pos;
         }
-        const long score = -negamax(table, board, SEARCH_DEPTH, -(long)1e11, (long)1e11, -color);
+        const long score = -negamax(table, board, SEARCH_DEPTH - 1, -best_score, (long)1e11, -color);
         unmove(board, pos.x, pos.y);
         if (score > best_score) {
             best_score = score;

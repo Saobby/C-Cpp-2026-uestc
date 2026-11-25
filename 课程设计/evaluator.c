@@ -75,7 +75,8 @@ Pattern find_basic_pattern(const Table * table, const int * board, const int sto
         }else {
             t = 2;  // 在棋盘边界外的位置当作敌方棋子处理
         }
-        table_idx += (int)pow(3, i) * t;
+        const int pow_table[] = {1, 3, 9, 27, 81, 243, 729, 2187, 6561};
+        table_idx += pow_table[i] * t;
     }
     const int pattern_type = table->table[table_idx];
     pattern.pattern_type = pattern_type;
@@ -159,7 +160,8 @@ long evaluate(const Table * table, const int * board) {
             if (count <= 1) {
                 continue;
             }
-            score += target_color * crossing_score_sum[i][idx] * (int)pow(corr_multiplier, count-1);
+            const int pow_table[] = {1, 10, (int)1e2, (int)1e3, (int)1e4, (int)1e5, (int)1e6, (int)1e7};
+            score += target_color * crossing_score_sum[i][idx] * pow_table[count-1];
         }
     }
     return score;
