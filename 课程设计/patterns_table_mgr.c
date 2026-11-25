@@ -98,7 +98,7 @@ int save_patterns_table() {
 }
 
 int load_patterns_table(Table * table) {
-    const FILE * fp = fopen("patterns.txt", "r");
+    FILE * fp = fopen("patterns.txt", "r");
     if (fp == NULL) {
         return -1;
     }

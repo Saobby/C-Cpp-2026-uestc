@@ -15,6 +15,8 @@ void print_board(const int * board);
 
 int unmove(int * board, int x, int y);
 
+int is_occupied(const int * board, int x, int y);
+
 int char2idx(char c);
 
 #endif //CCPP2026_GAME_ENGINE_H

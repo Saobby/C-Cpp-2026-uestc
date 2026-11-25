@@ -156,8 +156,8 @@ Pos search(const Table * table, int * board, const int color) {
     best_pos.y = -1;
     Pos moves[15 * 15];
     const int moves_count = generate_moves(table, board, color, moves);
-    if (moves[0].x == -1 || moves[0].y == -1) {
-        return moves[0];  // 错误，没有可落子点。
+    if (moves_count == 0) {
+        return best_pos;  // 棋盘已满
     }
     // 检查能否立马胜利
     const int rsp = move(board, moves[0].x, moves[0].y, color);

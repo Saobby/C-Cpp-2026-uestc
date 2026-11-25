@@ -73,16 +73,21 @@ int unmove(int * board, const int x, const int y) {
     return 0;
 }
 
+int is_occupied(const int * board, const int x, const int y) {
+    if (x < 0 || x > 14 || y < 0 || y > 14) {
+        return 1;  // 越界视为占用
+    }
+    return board[y * 15 + x] != 0;
+}
+
 void print_board(const int * board) {
     printf("  ");
     for (int i = 0; i < 15; i++) {
-        const char idx_str[] = {idx_char_table[i], ' ', '\0'};
-        printf(idx_str);
+        printf("%c ", idx_char_table[i]);
     }
     printf("\n");
     for (int y = 0; y < 15; y++) {
-        const char idx_str[] = {idx_char_table[y], ' ', '\0'};
-        printf(idx_str);
+        printf("%c ", idx_char_table[y]);
         for (int x = 0; x < 15; x++) {
             const int idx = y * 15 + x;
             if (board[idx] == 1) {
@@ -99,38 +104,14 @@ void print_board(const int * board) {
 }
 
 int char2idx(const char c) {
-    switch (c) {
-        case '0':
-            return 0;
-        case '1':
-            return 1;
-        case '2':
-            return 2;
-        case '3':
-            return 3;
-        case '4':
-            return 4;
-        case '5':
-            return 5;
-        case '6':
-            return 6;
-        case '7':
-            return 7;
-        case '8':
-            return 8;
-        case '9':
-            return 9;
-        case 'A':
-            return 10;
-        case 'B':
-            return 11;
-        case 'C':
-            return 12;
-        case 'D':
-            return 13;
-        case 'E':
-            return 14;
-        default:
-            return -1;
+    if (c >= '0' && c <= '9') {
+        return c - '0';
     }
+    if (c >= 'A' && c <= 'E') {
+        return c - 'A' + 10;
+    }
+    if (c >= 'a' && c <= 'e') {
+        return c - 'a' + 10;
+    }
+    return -1;
 }
