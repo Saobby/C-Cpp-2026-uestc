@@ -7,9 +7,6 @@
 #include "game_engine.h"
 
 int generate_moves(const Table * table, const int * board, const int color, Pos * moves) {
-    for (int i = 0; i < 15 * 15; i++) {
-        moves[i] = (Pos){.x = -1, .y = -1};
-    }
     int count = 0;
     int added_pos[15 * 15] = {0};
     // 能直接胜利的点最优先
@@ -114,7 +111,7 @@ int generate_moves(const Table * table, const int * board, const int color, Pos 
             }
         }
     }
-    return 0;
+    return count;
 }
 
 
@@ -124,8 +121,8 @@ long negamax(const Table * table, int * board, const int depth, long alpha, cons
     }
     long best_score = -(long)1e11;
     Pos moves[15 * 15];
-    generate_moves(table, board, color, moves);
-    for (int i = 0; i < 15 * 15; i++) {
+    const int moves_count = generate_moves(table, board, color, moves);
+    for (int i = 0; i < moves_count; i++) {
         const Pos pos = moves[i];
         if (pos.x == -1 || pos.y == -1) {
             continue;
@@ -158,7 +155,7 @@ Pos search(const Table * table, int * board, const int color) {
     best_pos.x = -1;
     best_pos.y = -1;
     Pos moves[15 * 15];
-    generate_moves(table, board, color, moves);
+    const int moves_count = generate_moves(table, board, color, moves);
     if (moves[0].x == -1 || moves[0].y == -1) {
         return moves[0];  // 错误，没有可落子点。
     }
@@ -168,7 +165,7 @@ Pos search(const Table * table, int * board, const int color) {
     if ((color == 1 && rsp == 1) || (color == -1 && rsp == 2)) {
         return moves[0];
     }
-    for (int i = 0; i < 15 * 15; i++) {
+    for (int i = 0; i < moves_count; i++) {
         const Pos pos = moves[i];
         if (pos.x == -1 || pos.y == -1) {
             continue;
